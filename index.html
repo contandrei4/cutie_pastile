@@ -9,7 +9,7 @@
         h1 { color: #343a40; margin-bottom: 25px; }
         .input-group { margin-bottom: 25px; text-align: left; }
         label { display: block; margin-bottom: 8px; font-weight: 600; }
-        input[type="text"], input[type="time"], select, button { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        input[type="time"], select, button { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
         button { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: 600; margin-top: 10px; transition: background-color 0.3s ease; }
         button:hover { background-color: #0056b3; }
         .link { display: block; margin-top: 20px; font-size: 14px; color: #007bff; text-decoration: none; transition: color 0.3s ease; }
@@ -20,12 +20,6 @@
 
 <div class="container">
     <h1>Setări Robot</h1>
-
-    <div class="input-group">
-        <label for="ipAddress">Adresa IP a Robotului:</label>
-        <input type="text" id="ipAddress" value="192.168.0.94">
-    </div>
-
     <div class="input-group">
         <label for="cutieSelect">Selectează cutia:</label>
         <select id="cutieSelect">
@@ -35,29 +29,28 @@
             <option value="3">Cutia 4</option>
         </select>
     </div>
-
     <div class="input-group">
         <label for="oraInput">Setează ora:</label>
         <input type="time" id="oraInput">
         <button onclick="setOra()">Setează ora</button>
     </div>
-    
     <a href="logs.html" class="link">Vezi log-urile</a>
 </div>
 
 <script>
+    const IP_ADDRESS = "192.168.0.94";
+
     function setOra() {
-        const ip = document.getElementById("ipAddress").value;
         const cutie = document.getElementById("cutieSelect").value;
         const oraTime = document.getElementById("oraInput").value;
 
-        if (!ip || !oraTime) {
-            alert("Te rog completează adresa IP și ora.");
+        if (!oraTime) {
+            alert("Te rog completează ora.");
             return;
         }
 
         const oraHHMM = oraTime.replace(":", "");
-        const url = `http://${ip}/set?cutie=${cutie}&ora=${oraHHMM}`;
+        const url = `http://${IP_ADDRESS}/set?cutie=${cutie}&ora=${oraHHMM}`;
         
         fetch(url)
             .then(response => response.text())
