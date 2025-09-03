@@ -50,7 +50,8 @@
         }
 
         const oraHHMM = oraTime.replace(":", "");
-        const url = `http://${IP_ADDRESS}/set?cutie=${cutie}&ora=${oraHHMM}`;
+        //const url = `http://${IP_ADDRESS}/set?cutie=${cutie}&ora=${oraHHMM}`;
+        const url = `https://433211df561a.ngrok-free.app/set?cutie=${cutie}&ora=${oraHHMM}`;
         
         fetch(url)
             .then(response => response.text())
