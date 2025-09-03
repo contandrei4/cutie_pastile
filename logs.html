@@ -1,83 +1,82 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Log-uri Robot</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #e9ecef; color: #495057; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); width: 100%; max-width: 450px; text-align: center; }
-        h1 { color: #343a40; margin-bottom: 25px; }
-        button { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; box-sizing: border-box; background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: 600; margin-top: 10px; transition: background-color 0.3s ease; }
-        button:hover { background-color: #0056b3; }
-        #logs { margin-top: 20px; text-align: left; background-color: #f8f9fa; padding: 15px; border-radius: 8px; max-height: 300px; overflow-y: auto; border: 1px solid #e9ecef; }
-        .log-entry { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #dee2e6; }
-        .log-entry:last-child { border-bottom: none; }
-        .status-ok { color: #28a745; font-weight: bold; }
-        .status-error { color: #dc3545; font-weight: bold; }
-        .link { display: block; margin-top: 20px; font-size: 14px; color: #007bff; text-decoration: none; transition: color 0.3s ease; }
-        .link:hover { color: #0056b3; }
-    </style>
+    <title>Log-uri Robot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #e9ecef; color: #495057; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); width: 100%; max-width: 450px; text-align: center; }
+        h1 { color: #343a40; margin-bottom: 25px; }
+        button { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; box-sizing: border-box; background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: 600; margin-top: 10px; transition: background-color 0.3s ease; }
+        button:hover { background-color: #0056b3; }
+        #logs { margin-top: 20px; text-align: left; background-color: #f8f9fa; padding: 15px; border-radius: 8px; max-height: 300px; overflow-y: auto; border: 1px solid #e9ecef; }
+        .log-entry { margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #dee2e6; }
+        .log-entry:last-child { border-bottom: none; }
+        .status-ok { color: #28a745; font-weight: bold; }
+        .status-error { color: #dc3545; font-weight: bold; }
+        .link { display: block; margin-top: 20px; font-size: 14px; color: #007bff; text-decoration: none; transition: color 0.3s ease; }
+        .link:hover { color: #0056b3; }
+    </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Log-uri Robot</h1>
-    <button onclick="getLogs()">Refresh Log-uri</button>
-    <div id="logs">
-        <p>Apasă "Refresh Log-uri" pentru a le încărca.</p>
-    </div>
-    <a href="index.html" class="link">Înapoi la setări</a>
+    <h1>Log-uri Robot</h1>
+    <button onclick="getLogs()">Refresh Log-uri</button>
+    <div id="logs">
+        <p>Apasă "Refresh Log-uri" pentru a le încărca.</p>
+    </div>
+    <a href="index.html" class="link">Înapoi la setări</a>
 </div>
 
 <script>
-    // const IP_ADDRESS = "192.168.0.94"; // Nu mai e necesar
-
-    function getLogs() {
-        const url = `https://433211df561a.ngrok-free.app:8080/data`;
-        fetch(url)
-            .then(response => response.text())
-            .then(data => {
-                const logsDiv = document.getElementById("logs");
-                logsDiv.innerHTML = "";
-                if (data.length === 0) {
-                    logsDiv.innerText = "Nu există log-uri.";
-                    return;
-                }
-                const logLength = 12;
-                for (let i = 0; i < data.length; i += logLength) {
-                    const log = data.substring(i, i + logLength);
-                    if (log.length === logLength) {
-                        const cutie = log.substring(0, 1);
-                        const cod = log.substring(1, 2);
-                        const ora = log.substring(2, 6);
-                        const an = "20" + log.substring(6, 8);
-                        const luna = log.substring(8, 10);
-                        const zi = log.substring(10, 12);
-                        const logEntry = document.createElement('div');
-                        logEntry.classList.add('log-entry');
-                        let mesajStatus;
-                        let statusClass;
-                        if (cod === '0') {
-                            mesajStatus = "Pastilă luată la timp";
-                            statusClass = 'status-ok';
-                        } else {
-                            mesajStatus = "Pastilă ratată";
-                            statusClass = 'status-error';
-                        }
-                        logEntry.innerHTML = `
-                            <p><strong>Cutia ${parseInt(cutie) + 1}</strong></p>
-                            <p class="${statusClass}">${mesajStatus}</p>
-                            <p>La ora ${ora.substring(0, 2)}:${ora.substring(2, 4)} pe ${zi}.${luna}.${an}</p>
-                        `;
-                        logsDiv.appendChild(logEntry);
-                    }
-                }
-            })
-            .catch(error => {
-                const logsDiv = document.getElementById("logs");
-                logsDiv.innerText = "Eroare la preluarea log-urilor. Asigură-te că robotul este pornit și conectat.";
-            });
-    }
+    function getLogs() {
+        // URL-ul ngrok a fost actualizat
+        const url = `https://bcf4c7cdc431.ngrok-free.app/data`;
+        fetch(url)
+            .then(response => response.text())
+            .then(data => {
+                const logsDiv = document.getElementById("logs");
+                logsDiv.innerHTML = "";
+                if (data.length === 0) {
+                    logsDiv.innerText = "Nu există log-uri.";
+                    return;
+                }
+                const logLength = 12;
+                for (let i = 0; i < data.length; i += logLength) {
+                    const log = data.substring(i, i + logLength);
+                    if (log.length === logLength) {
+                        const cutie = log.substring(0, 1);
+                        const cod = log.substring(1, 2);
+                        const ora = log.substring(2, 6);
+                        const an = "20" + log.substring(6, 8);
+                        const luna = log.substring(8, 10);
+                        const zi = log.substring(10, 12);
+                        const logEntry = document.createElement('div');
+                        logEntry.classList.add('log-entry');
+                        let mesajStatus;
+                        let statusClass;
+                        if (cod === '0') {
+                            mesajStatus = "Pastilă luată la timp";
+                            statusClass = 'status-ok';
+                        } else {
+                            mesajStatus = "Pastilă ratată";
+                            statusClass = 'status-error';
+                        }
+                        logEntry.innerHTML = `
+                            <p><strong>Cutia ${parseInt(cutie) + 1}</strong></p>
+                            <p class="${statusClass}">${mesajStatus}</p>
+                            <p>La ora ${ora.substring(0, 2)}:${ora.substring(2, 4)} pe ${zi}.${luna}.${an}</p>
+                        `;
+                        logsDiv.appendChild(logEntry);
+                    }
+                }
+            })
+            .catch(error => {
+                const logsDiv = document.getElementById("logs");
+                logsDiv.innerText = "Eroare la preluarea log-urilor. Asigură-te că robotul este pornit și conectat.";
+            });
+    }
 </script>
 </body>
 </html>
