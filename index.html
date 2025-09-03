@@ -38,8 +38,6 @@
 </div>
 
 <script>
-    const IP_ADDRESS = "192.168.0.94";
-
     function setOra() {
         const cutie = document.getElementById("cutieSelect").value;
         const oraTime = document.getElementById("oraInput").value;
@@ -50,10 +48,8 @@
         }
 
         const oraHHMM = oraTime.replace(":", "");
-        //const url = `http://${IP_ADDRESS}/set?cutie=${cutie}&ora=${oraHHMM}`;
-        //const url = `https://433211df561a.ngrok-free.app/set?cutie=${cutie}&ora=${oraHHMM}`;
-        // Aici adaugi portul 8080
-        const url = `https://433211df561a.ngrok-free.app:8080/set?cutie=${cutie}&ora=${oraHHMM}`;
+        // URL-ul ngrok a fost actualizat
+        const url = `https://bcf4c7cdc431.ngrok-free.app/set?cutie=${cutie}&ora=${oraHHMM}`;
         
         fetch(url)
             .then(response => response.text())
