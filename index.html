@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Setări Robot</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #e9ecef; color: #495057; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); width: 100%; max-width: 450px; text-align: center; }
+        h1 { color: #343a40; margin-bottom: 25px; }
+        .input-group { margin-bottom: 25px; text-align: left; }
+        label { display: block; margin-bottom: 8px; font-weight: 600; }
+        input[type="text"], input[type="time"], select, button { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
+        button { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: 600; margin-top: 10px; transition: background-color 0.3s ease; }
+        button:hover { background-color: #0056b3; }
+        .link { display: block; margin-top: 20px; font-size: 14px; color: #007bff; text-decoration: none; transition: color 0.3s ease; }
+        .link:hover { color: #0056b3; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Setări Robot</h1>
+
+    <div class="input-group">
+        <label for="ipAddress">Adresa IP a Robotului:</label>
+        <input type="text" id="ipAddress" value="192.168.0.94">
+    </div>
+
+    <div class="input-group">
+        <label for="cutieSelect">Selectează cutia:</label>
+        <select id="cutieSelect">
+            <option value="0">Cutia 1</option>
+            <option value="1">Cutia 2</option>
+            <option value="2">Cutia 3</option>
+            <option value="3">Cutia 4</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <label for="oraInput">Setează ora:</label>
+        <input type="time" id="oraInput">
+        <button onclick="setOra()">Setează ora</button>
+    </div>
+    
+    <a href="logs.html" class="link">Vezi log-urile</a>
+</div>
+
+<script>
+    function setOra() {
+        const ip = document.getElementById("ipAddress").value;
+        const cutie = document.getElementById("cutieSelect").value;
+        const oraTime = document.getElementById("oraInput").value;
+
+        if (!ip || !oraTime) {
+            alert("Te rog completează adresa IP și ora.");
+            return;
+        }
+
+        const oraHHMM = oraTime.replace(":", "");
+        const url = `http://${ip}/set?cutie=${cutie}&ora=${oraHHMM}`;
+        
+        fetch(url)
+            .then(response => response.text())
+            .then(data => {
+                alert("Răspuns de la robot: " + data);
+            })
+            .catch(error => {
+                alert("Eroare la conectare: " + error);
+            });
+    }
+</script>
+
+</body>
+</html>
