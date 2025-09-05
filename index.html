@@ -38,6 +38,8 @@
 </div>
 
 <script>
+    const BASE_URL = "http://86.126.xxx.xxx:8080"; // <- înlocuiește cu IP-ul public și portul tău
+
     function setOra() {
         const cutie = document.getElementById("cutieSelect").value;
         const oraTime = document.getElementById("oraInput").value;
@@ -48,8 +50,7 @@
         }
 
         const oraHHMM = oraTime.replace(":", "");
-        // ATENȚIE: Înlocuiește cu adresa ta IP publică și portul.
-        const url = `http://Adresa_Ta_IP_Publica:8080/set?cutie=${cutie}&ora=${oraHHMM}`;
+        const url = `${BASE_URL}/set?cutie=${cutie}&ora=${oraHHMM}`;
         
         fetch(url)
             .then(response => response.text())
