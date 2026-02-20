@@ -1,67 +1,1504 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Setări Robot</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #e9ecef; color: #495057; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .container { background-color: #ffffff; padding: 40px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); width: 100%; max-width: 450px; text-align: center; }
-        h1 { color: #343a40; margin-bottom: 25px; }
-        .input-group { margin-bottom: 25px; text-align: left; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; }
-        input[type="time"], select, button { width: 100%; padding: 12px; border: 1px solid #ced4da; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        button { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: 600; margin-top: 10px; transition: background-color 0.3s ease; }
-        button:hover { background-color: #0056b3; }
-        .link { display: block; margin-top: 20px; font-size: 14px; color: #007bff; text-decoration: none; transition: color 0.3s ease; }
-        .link:hover { color: #0056b3; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>8-Ball Pool — Colorblind Friendly</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;--panel:#161b22;--border:#30363d;
+  --accent:#f0c040;--accent2:#e06030;--text:#e6edf3;--muted:#8b949e;
+}
+body{background:var(--bg);color:var(--text);font-family:'DM Mono',monospace;
+  display:flex;flex-direction:column;align-items:center;min-height:100vh;padding:16px;overflow-x:hidden}
+h1{font-family:'Bebas Neue',sans-serif;font-size:2.6rem;letter-spacing:.15em;color:var(--accent);
+  text-shadow:0 0 30px rgba(240,192,64,.4);margin-bottom:2px}
+.subtitle{font-size:.68rem;color:var(--muted);letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px}
+.game-wrap{display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
+.side{width:190px;display:flex;flex-direction:column;gap:12px}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:12px}
+.ptitle{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+canvas{display:block;border-radius:4px;cursor:crosshair}
+.btn{display:block;width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:6px;
+  background:var(--panel);color:var(--text);font-family:'DM Mono',monospace;font-size:.75rem;
+  cursor:pointer;text-align:center;transition:all .2s;letter-spacing:.05em}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent);color:#000;border-color:var(--accent)}
+.btn.danger{border-color:var(--accent2);color:var(--accent2)}
+.btn.danger:hover{background:var(--accent2);color:#fff}
+#turn-label{color:var(--accent);font-size:.85rem;font-weight:500;margin-bottom:4px}
+#msg-label{color:var(--muted);font-size:.68rem;line-height:1.5}
+.power-label{font-size:.6rem;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;
+  display:flex;justify-content:space-between;margin-bottom:4px}
+#power-bar-bg{width:100%;height:10px;background:#1c2128;border-radius:5px;overflow:hidden;border:1px solid var(--border)}
+#power-bar{height:100%;width:50%;background:linear-gradient(90deg,#2ea043,#f0c040,#e06030);border-radius:5px}
+.spin-wrap{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px;margin-top:6px}
+.spin-btn{padding:5px;border:1px solid var(--border);border-radius:4px;background:var(--panel);
+  color:var(--muted);font-family:'DM Mono',monospace;font-size:.62rem;cursor:pointer;text-align:center;transition:all .15s}
+.spin-btn:hover{border-color:var(--accent);color:var(--accent)}
+.spin-btn.sel{background:rgba(240,192,64,.15);border-color:var(--accent);color:var(--accent)}
+.balls-row{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;min-height:22px}
+.legend{display:flex;flex-direction:column;gap:6px;margin-top:4px}
+.leg-item{display:flex;align-items:center;gap:8px;font-size:.65rem;color:var(--muted)}
+#overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;
+  justify-content:center;z-index:100;backdrop-filter:blur(4px)}
+.modal{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:28px;
+  max-width:440px;width:92%;text-align:center}
+.modal h2{font-family:'Bebas Neue',sans-serif;font-size:1.9rem;color:var(--accent);letter-spacing:.1em;margin-bottom:6px}
+.modal p{color:var(--muted);font-size:.75rem;line-height:1.6;margin-bottom:18px}
+.modal-btns{display:flex;flex-direction:column;gap:8px}
+.mode-btn{padding:11px 16px;border:1px solid var(--border);border-radius:8px;background:transparent;
+  color:var(--text);font-family:'DM Mono',monospace;font-size:.78rem;cursor:pointer;transition:all .2s;
+  text-align:left;display:flex;align-items:center;gap:12px}
+.mode-btn:hover{border-color:var(--accent);background:rgba(240,192,64,.07)}
+.mode-btn .icon{font-size:1.3rem;width:28px;text-align:center}
+.mode-btn .desc{font-size:.63rem;color:var(--muted);margin-top:1px}
+input[type=text]{width:100%;padding:8px 10px;border:1px solid var(--border);border-radius:6px;
+  background:#0d1117;color:var(--text);font-family:'DM Mono',monospace;font-size:.8rem;margin-bottom:8px}
+input[type=text]:focus{outline:none;border-color:var(--accent)}
+#room-section{display:none}
+#peer-status{font-size:.66rem;color:var(--muted);margin-top:6px;min-height:18px;word-break:break-all}
+.device-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.device-btn{padding:16px 10px;border:2px solid var(--border);border-radius:10px;background:transparent;
+  color:var(--text);font-family:'DM Mono',monospace;font-size:.75rem;cursor:pointer;text-align:center;
+  transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:6px}
+.device-btn:hover{border-color:var(--accent);background:rgba(240,192,64,.07)}
+.device-btn.chosen{border-color:var(--accent);background:rgba(240,192,64,.12);color:var(--accent)}
+.device-btn .dicon{font-size:1.8rem}
+.device-btn .dlabel{font-size:.7rem;letter-spacing:.05em}
+.device-btn .dsub{font-size:.58rem;color:var(--muted);margin-top:2px}
+.step-header{font-size:.62rem;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+#device-screen{display:block}
+#mode-screen{display:none}
+.player-row{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.player-tag{font-size:.7rem;color:var(--accent);min-width:60px;font-weight:500}
+.chosen-badge{font-size:.65rem;padding:2px 7px;border-radius:4px;border:1px solid var(--border);color:var(--muted)}
+.chosen-badge.pc{border-color:#50a0f0;color:#50a0ff;background:rgba(80,160,255,.1)}
+.chosen-badge.phone{border-color:#f0a050;color:#f0a050;background:rgba(240,160,80,.1)}
+</style>
 </head>
 <body>
+<h1>8-BALL POOL</h1>
+<div class="subtitle">Colorblind Friendly · Pattern Markers · No Color Reliance</div>
 
-<div class="container">
-    <h1>Setări Robot</h1>
-    <div class="input-group">
-        <label for="cutieSelect">Selectează cutia:</label>
-        <select id="cutieSelect">
-            <option value="0">Cutia 1</option>
-            <option value="1">Cutia 2</option>
-            <option value="2">Cutia 3</option>
-            <option value="3">Cutia 4</option>
-        </select>
+<!-- Mode selection overlay -->
+<div id="overlay">
+  <div class="modal">
+    <!-- Screen 1: YOUR device -->
+    <div id="device-screen">
+      <h2>YOUR DEVICE</h2>
+      <p>How will <strong>you</strong> control the game? Each player picks this on their own screen.</p>
+      <div class="device-grid" style="margin-top:16px">
+        <button class="device-btn" id="btn-pc" onclick="setMyDevice('pc')">
+          <span class="dicon">🖥️</span>
+          <span class="dlabel">PC / Mouse</span>
+          <span class="dsub">Move to aim, click to shoot</span>
+        </button>
+        <button class="device-btn" id="btn-phone" onclick="setMyDevice('phone')">
+          <span class="dicon">📱</span>
+          <span class="dlabel">Phone / Touch</span>
+          <span class="dsub">Tap to aim, release to shoot</span>
+        </button>
+      </div>
+      <p style="font-size:.6rem;color:var(--muted);margin-top:14px;line-height:1.6">
+        For local pass-and-play, P2 will pick their device on the next screen when you choose that mode.
+      </p>
     </div>
-    <div class="input-group">
-        <label for="oraInput">Setează ora:</label>
-        <input type="time" id="oraInput">
-        <button onclick="setOra()">Setează ora</button>
+
+    <!-- Screen 2: Game mode -->
+    <div id="mode-screen" style="display:none">
+      <h2>CHOOSE MODE</h2>
+      <div id="my-device-display" style="margin-bottom:14px;font-size:.7rem;color:var(--muted)"></div>
+      <p>Groups are told apart by <strong>pattern only</strong> — stripes vs dots — never by colour alone.</p>
+      <div class="modal-btns" style="margin-top:12px">
+        <button class="mode-btn" onclick="startMode('practice')">
+          <span class="icon">🎱</span>
+          <div><div>Practice Mode</div><div class="desc">Solo free play — no rules, perfect your aim.</div></div>
+        </button>
+        <button class="mode-btn" onclick="startMode('ai')">
+          <span class="icon">🤖</span>
+          <div><div>vs AI Opponent</div><div class="desc">Full 8-ball rules against the computer.</div></div>
+        </button>
+        <button class="mode-btn" onclick="showLocalSetup()">
+          <span class="icon">🤝</span>
+          <div><div>Local 2-Player</div><div class="desc">Pass-and-play on the same screen.</div></div>
+        </button>
+        <button class="mode-btn" onclick="showOnline()">
+          <span class="icon">🌐</span>
+          <div><div>Online 2-Player</div><div class="desc">Play with a friend anywhere — each on their own device.</div></div>
+        </button>
+      </div>
+      <button class="btn" onclick="goToDeviceScreen()" style="width:100%;margin-top:10px">← Back</button>
     </div>
-    <a href="logs.html" class="link">Vezi log-urile</a>
+
+    <!-- Screen 3a: Local P2 device (pass-and-play) -->
+    <div id="local-setup-screen" style="display:none">
+      <h2>PLAYER 2 DEVICE</h2>
+      <p>Player 1 chose <span id="p1-device-recap" style="color:var(--accent)"></span>. Now Player 2 picks theirs:</p>
+      <div class="device-grid" style="margin-top:16px">
+        <button class="device-btn" id="p2-btn-pc" onclick="setP2Device('pc')">
+          <span class="dicon">🖥️</span>
+          <span class="dlabel">PC / Mouse</span>
+          <span class="dsub">Move to aim, click to shoot</span>
+        </button>
+        <button class="device-btn" id="p2-btn-phone" onclick="setP2Device('phone')">
+          <span class="dicon">📱</span>
+          <span class="dlabel">Phone / Touch</span>
+          <span class="dsub">Tap to aim, release to shoot</span>
+        </button>
+      </div>
+      <button class="btn" onclick="goToModeScreen()" style="width:100%;margin-top:10px">← Back</button>
+    </div>
+    <div id="room-section" style="margin-top:16px;text-align:left">
+      <div style="display:flex;gap:8px;margin-bottom:10px">
+        <button class="btn" id="tab-host" onclick="switchTab('host')" style="flex:1;border-color:var(--accent);color:var(--accent)">🏠 Create Room</button>
+        <button class="btn" id="tab-join" onclick="switchTab('join')" style="flex:1">🔗 Join Room</button>
+      </div>
+      <div id="host-section">
+        <p style="font-size:.7rem;color:var(--muted);margin-bottom:8px">Your Room ID will appear below — share it with your friend.</p>
+        <div id="peer-status" style="font-size:.78rem;color:var(--accent);min-height:22px;word-break:break-all;padding:6px;background:#0d1117;border-radius:4px;border:1px solid var(--border)">Generating ID…</div>
+        <button class="btn primary" onclick="copyRoomId()" style="margin-top:8px;width:100%">📋 Copy Room ID</button>
+      </div>
+      <div id="join-section" style="display:none">
+        <p style="font-size:.7rem;color:var(--muted);margin-bottom:8px">Paste your friend's Room ID and click Connect.</p>
+        <input type="text" id="room-input" placeholder="e.g. pool-ab12cd">
+        <button class="btn primary" onclick="joinRoom()" style="width:100%">Connect →</button>
+        <div id="join-status" style="font-size:.66rem;color:var(--muted);margin-top:6px;min-height:16px"></div>
+      </div>
+      <button class="btn" onclick="hideOnline()" style="width:100%;margin-top:8px">← Back</button>
+    </div>
+  </div>
+</div>
+
+<div class="game-wrap">
+  <!-- Left panel -->
+  <div class="side">
+    <div class="panel">
+      <div class="ptitle">Game Status</div>
+      <div id="turn-label">—</div>
+      <div id="msg-label">Select a mode to start</div>
+    </div>
+    <div class="panel">
+      <div class="ptitle">You — STRIPES ▤</div>
+      <div class="balls-row" id="p1-balls"></div>
+    </div>
+    <div class="panel">
+      <div class="ptitle">Opponent — DIAMONDS ◆</div>
+      <div class="balls-row" id="p2-balls"></div>
+    </div>
+    <div class="panel">
+      <div class="ptitle">Pattern Legend</div>
+      <div class="legend">
+        <div class="leg-item"><canvas id="leg-stripe" width="26" height="26"></canvas><span>Stripes — Player 1</span></div>
+        <div class="leg-item"><canvas id="leg-dots"   width="26" height="26"></canvas><span>Diamonds — Player 2</span></div>
+        <div class="leg-item"><canvas id="leg-eight"  width="26" height="26"></canvas><span>Eight Ball</span></div>
+        <div class="leg-item"><canvas id="leg-cue"    width="26" height="26"></canvas><span>Cue Ball</span></div>
+      </div>
+    </div>
+    <button class="btn danger" id="reset-btn" onclick="resetGame()" style="display:none">↺ New Game</button>
+    <button class="btn" id="menu-btn" onclick="showMenu()" style="display:none">☰ Menu</button>
+  </div>
+
+  <!-- Table canvas -->
+  <div>
+    <canvas id="c" width="820" height="440"></canvas>
+  </div>
+
+  <!-- Right panel -->
+  <div class="side">
+    <div class="panel">
+      <div class="ptitle">Cue Power</div>
+      <div class="power-label"><span>Soft</span><span id="power-pct">50%</span><span>Hard</span></div>
+      <div id="power-bar-bg"><div id="power-bar"></div></div>
+      <input type="range" id="power-slider" min="1" max="100" value="50"
+        style="width:100%;margin-top:6px;accent-color:var(--accent)">
+    </div>
+    <div class="panel">
+      <div class="ptitle">Cue Spin</div>
+      <div class="spin-wrap">
+        <button class="spin-btn" data-sx="-1" data-sy="-1" onclick="setSpin(this)">↖</button>
+        <button class="spin-btn" data-sx="0"  data-sy="-1" onclick="setSpin(this)">↑ Top</button>
+        <button class="spin-btn" data-sx="1"  data-sy="-1" onclick="setSpin(this)">↗</button>
+        <button class="spin-btn" data-sx="-1" data-sy="0"  onclick="setSpin(this)">← L</button>
+        <button class="spin-btn sel" data-sx="0" data-sy="0" onclick="setSpin(this)" id="spin-c">● Ctr</button>
+        <button class="spin-btn" data-sx="1"  data-sy="0"  onclick="setSpin(this)">R →</button>
+        <button class="spin-btn" data-sx="-1" data-sy="1"  onclick="setSpin(this)">↙</button>
+        <button class="spin-btn" data-sx="0"  data-sy="1"  onclick="setSpin(this)">↓ Bot</button>
+        <button class="spin-btn" data-sx="1"  data-sy="1"  onclick="setSpin(this)">↘</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ptitle">Controls</div>
+      <div style="font-size:.64rem;color:var(--muted);line-height:2.1">
+        <div>🖱 Move mouse → aim</div>
+        <div>🖱 Click → shoot</div>
+        <div>⚡ Slider → power</div>
+        <div>🌀 Grid → spin</div>
+        <div>📍 After foul → place ball</div>
+      </div>
+    </div>
+    <div class="panel" id="online-panel" style="display:none">
+      <div class="ptitle">Online</div>
+      <div id="online-status" style="font-size:.68rem;color:var(--muted)">Disconnected</div>
+      <div id="room-code-display" style="font-size:.75rem;color:var(--accent);margin-top:4px;word-break:break-all"></div>
+    </div>
+  </div>
 </div>
 
 <script>
-    const BASE_URL = "http://86.126.xxx.xxx:8080"; // <- înlocuiește cu IP-ul public și portul tău
+// ── Constants ─────────────────────────────────────────────────────────────────
+const CW=820, CH=440, BR=12; // canvas width/height, ball radius
+const RAIL=40;
+const PX=RAIL, PY=RAIL, PW=CW-RAIL*2, PH=CH-RAIL*2;
 
-    function setOra() {
-        const cutie = document.getElementById("cutieSelect").value;
-        const oraTime = document.getElementById("oraInput").value;
+// Pocket positions and radii — LARGE pockets
+const POCKETS=[
+  {x:RAIL,      y:RAIL,      r:26},
+  {x:CW/2,      y:RAIL-6,    r:22},
+  {x:CW-RAIL,   y:RAIL,      r:26},
+  {x:RAIL,      y:CH-RAIL,   r:26},
+  {x:CW/2,      y:CH-RAIL+6, r:22},
+  {x:CW-RAIL,   y:CH-RAIL,   r:26},
+];
 
-        if (!oraTime) {
-            alert("Te rog completează ora.");
-            return;
-        }
+// Ball definitions — 'stripe' = P1, 'dot' = P2, 'eight', 'cue'
+const BDEFS=[
+  {id:0, n:'●', t:'cue'},
+  {id:1, n:'1', t:'stripe'}, {id:2, n:'2',  t:'stripe'},
+  {id:3, n:'3', t:'stripe'}, {id:4, n:'4',  t:'stripe'},
+  {id:5, n:'5', t:'stripe'}, {id:6, n:'6',  t:'stripe'},
+  {id:7, n:'7', t:'stripe'}, {id:8, n:'8',  t:'eight'},
+  {id:9, n:'9', t:'dot'},    {id:10,n:'10', t:'dot'},
+  {id:11,n:'11',t:'dot'},    {id:12,n:'12', t:'dot'},
+  {id:13,n:'13',t:'dot'},    {id:14,n:'14', t:'dot'},
+  {id:15,n:'15',t:'dot'},
+];
 
-        const oraHHMM = oraTime.replace(":", "");
-        const url = `${BASE_URL}/set?cutie=${cutie}&ora=${oraHHMM}`;
-        
-        fetch(url)
-            .then(response => response.text())
-            .then(data => {
-                alert("Răspuns de la robot: " + data);
-            })
-            .catch(error => {
-                alert("Eroare la conectare: " + error);
-            });
+// Neutral palette — same brightness, only pattern distinguishes groups
+const BASE_COL   = '#d4b86a'; // warm cream-gold for all non-cue balls
+const STRIPE_COL = '#c8a84a'; // slightly darker for stripe balls
+const DOT_COL    = '#c8a84a'; // same
+const EIGHT_COL  = '#1a1a1a';
+const CUE_COL    = '#f7f5ee';
+
+// Head string X — cue ball must be placed left of this line for the break
+const HEAD_X = PX + PW*0.25;
+
+// ── State ─────────────────────────────────────────────────────────────────────
+let balls=[], cueBall=null;
+let gameMode=null, practiceMode=false;
+let turn=0; // 0=P1, 1=P2
+let playerGroup=[null,null]; // 'stripe' or 'dot'
+let shooting=false, gameOver=false, placingCue=false, breakMode=false;
+let pocketedThisTurn=[], firstHitBall=null, cueBallMoved=false;
+let spinX=0, spinY=0, power=50;
+let mx=CW/2, my=CH/2;
+let animID=null;
+// Online
+let peerLib=null, peerConn=null, peerRole=null, myPeerID=null;
+// Device settings: 'pc' or 'phone' for each player
+// myDevice = this player's own device choice ('pc' or 'phone')
+// deviceP2 = only used in local pass-and-play
+let myDevice=null, deviceP2='pc';
+let touchStartX=0, touchStartY=0, touchActive=false;
+
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+
+// ── Rack ──────────────────────────────────────────────────────────────────────
+function mkBall(def,x,y){return{...def,x,y,vx:0,vy:0,pocketed:false};}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=0|Math.random()*(i+1);[a[i],a[j]]=[a[j],a[i]];}}
+
+function rackBalls(){
+  balls=[];
+  // Cue ball
+  cueBall=mkBall(BDEFS[0], PX+PW*0.25, CH/2);
+  balls.push(cueBall);
+
+  const rx=PX+PW*0.67, ry=CH/2;
+  const gap=BR*2+1.2;
+
+  // 15 object balls in triangle — 8 in center (row 2, col 1 of 0-index)
+  const stripes=[1,2,3,4,5,6,7];
+  const dots=[9,10,11,12,13,14,15];
+  shuffle(stripes); shuffle(dots);
+
+  // Row layout: row0=1ball, row1=2, row2=3, row3=4, row4=5
+  // Position index 0-14 mapped into triangle
+  // We enforce ball 8 at index 4 (center of row 2)
+  const flat=new Array(15);
+  flat[4]=8; // center
+  // Fill corners/edges with mix, alternating
+  const remaining=[...stripes,...dots]; shuffle(remaining);
+  let ri=0;
+  for(let i=0;i<15;i++){if(i!==4)flat[i]=remaining[ri++];}
+
+  let idx=0;
+  for(let row=0;row<5;row++){
+    for(let col=0;col<=row;col++){
+      const bx=rx + row*gap*Math.sqrt(3)/2;
+      const by=ry + (col-row/2)*gap;
+      const bid=flat[idx++];
+      balls.push(mkBall(BDEFS[bid],bx,by));
     }
-</script>
+  }
+}
 
+// ── Draw ──────────────────────────────────────────────────────────────────────
+function drawTable(){
+  // Outer rail
+  const rg=ctx.createLinearGradient(0,0,0,CH);
+  rg.addColorStop(0,'#6b4520'); rg.addColorStop(0.5,'#7d5228'); rg.addColorStop(1,'#4a2e10');
+  ctx.fillStyle=rg;
+  ctx.beginPath(); ctx.roundRect(0,0,CW,CH,8); ctx.fill();
+
+  // Inset rail shadow
+  ctx.fillStyle='rgba(0,0,0,0.4)';
+  ctx.beginPath(); ctx.roundRect(4,4,CW-8,CH-8,6); ctx.fill();
+
+  // Felt
+  const fg=ctx.createRadialGradient(CW/2,CH/2,20,CW/2,CH/2,CW*0.55);
+  fg.addColorStop(0,'#246040'); fg.addColorStop(1,'#183628');
+  ctx.fillStyle=fg;
+  ctx.fillRect(PX,PY,PW,PH);
+
+  // Felt grain texture
+  ctx.save();
+  ctx.globalAlpha=0.03;
+  for(let y=PY;y<PY+PH;y+=3){
+    ctx.beginPath();ctx.moveTo(PX,y);ctx.lineTo(PX+PW,y);
+    ctx.strokeStyle='#fff';ctx.lineWidth=1;ctx.stroke();
+  }
+  ctx.restore();
+
+  // Head string — the break/freeball line
+  ctx.save();
+  ctx.strokeStyle='rgba(255,220,80,0.08)';ctx.lineWidth=6;
+  ctx.beginPath();ctx.moveTo(HEAD_X,PY);ctx.lineTo(HEAD_X,PY+PH);ctx.stroke();
+  ctx.strokeStyle=breakMode?'rgba(255,220,80,0.55)':' rgba(255,255,255,0.1)';
+  ctx.lineWidth=1.5;ctx.setLineDash([5,6]);
+  ctx.beginPath();ctx.moveTo(HEAD_X,PY);ctx.lineTo(HEAD_X,PY+PH);ctx.stroke();
+  ctx.setLineDash([]);
+  if(breakMode){
+    ctx.fillStyle='rgba(255,220,80,0.75)';
+    ctx.font='bold 9px monospace';ctx.textAlign='center';ctx.textBaseline='top';
+    ctx.fillText('HEAD STRING',HEAD_X,PY+4);
+    ctx.fillStyle='rgba(255,220,80,0.5)';
+    ctx.font='8px monospace';ctx.textBaseline='bottom';
+    ctx.fillText('← place ball here',HEAD_X-2,PY+PH-4);
+  }
+  ctx.restore();
+
+  // Rail diamonds
+  const diam=[
+    [CW*0.25,RAIL*0.5],[CW*0.5,RAIL*0.5],[CW*0.75,RAIL*0.5],
+    [CW*0.25,CH-RAIL*0.5],[CW*0.5,CH-RAIL*0.5],[CW*0.75,CH-RAIL*0.5],
+    [RAIL*0.5,CH*0.33],[RAIL*0.5,CH*0.67],
+    [CW-RAIL*0.5,CH*0.33],[CW-RAIL*0.5,CH*0.67],
+  ];
+  ctx.fillStyle='rgba(255,220,120,0.35)';
+  for(const[dx,dy]of diam){
+    ctx.save();ctx.translate(dx,dy);ctx.rotate(Math.PI/4);
+    ctx.fillRect(-4,-4,8,8);ctx.restore();
+  }
+
+  // Pockets — drawn OVER felt so they look like real holes
+  for(const p of POCKETS){
+    // Dark hole
+    const pg=ctx.createRadialGradient(p.x,p.y,1,p.x,p.y,p.r);
+    pg.addColorStop(0,'#000000');
+    pg.addColorStop(0.7,'#0a0a0a');
+    pg.addColorStop(1,'#1a0f00');
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r,0,Math.PI*2);ctx.fillStyle=pg;ctx.fill();
+    // Leather ring
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r+3,0,Math.PI*2);
+    ctx.strokeStyle='#3d2208';ctx.lineWidth=4;ctx.stroke();
+    // Inner glint
+    ctx.beginPath();ctx.arc(p.x,p.y,p.r*0.55,0,Math.PI*2);
+    ctx.strokeStyle='rgba(80,40,0,0.4)';ctx.lineWidth=1;ctx.stroke();
+  }
+}
+
+// Draw a single ball with TRUE pattern-based identification
+function drawBall(b){
+  if(b.pocketed)return;
+  const {x,y,t,n}=b;
+  const r=BR;
+
+  // Drop shadow
+  ctx.save();
+  ctx.shadowColor='rgba(0,0,0,0.5)';ctx.shadowBlur=6;ctx.shadowOffsetX=2;ctx.shadowOffsetY=3;
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.fillStyle='#000';ctx.fill();
+  ctx.restore();
+
+  ctx.save();
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.clip();
+
+  if(t==='cue'){
+    // Cue ball — plain white, easy to identify
+    ctx.fillStyle=CUE_COL;ctx.fillRect(x-r,y-r,r*2,r*2);
+    // Simple crosshair
+    ctx.strokeStyle='rgba(0,0,0,0.15)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x-r*0.55,y);ctx.lineTo(x+r*0.55,y);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(x,y-r*0.55);ctx.lineTo(x,y+r*0.55);ctx.stroke();
+
+  } else if(t==='eight'){
+    // 8-ball — solid black
+    ctx.fillStyle=EIGHT_COL;ctx.fillRect(x-r,y-r,r*2,r*2);
+    // White circle with 8
+    ctx.beginPath();ctx.arc(x,y,r*0.46,0,Math.PI*2);ctx.fillStyle='#fff';ctx.fill();
+    ctx.fillStyle='#111';ctx.font=`bold ${r*0.68}px monospace`;
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('8',x,y+0.5);
+
+  } else if(t==='stripe'){
+    // STRIPE pattern — horizontal band through middle
+    // Base: light cream
+    ctx.fillStyle='#f0e8c8';ctx.fillRect(x-r,y-r,r*2,r*2);
+    // Wide dark stripe band across middle third
+    const bandH=r*0.55;
+    ctx.fillStyle='#2a2a2a';
+    ctx.fillRect(x-r, y-bandH, r*2, bandH*2);
+    // Two thin accent lines bordering the band
+    ctx.fillStyle='rgba(0,0,0,0.6)';
+    ctx.fillRect(x-r, y-bandH-1.5, r*2, 2);
+    ctx.fillRect(x-r, y+bandH-0.5, r*2, 2);
+    // Number in white on dark band
+    ctx.fillStyle='#fff';ctx.font=`bold ${r*0.72}px monospace`;
+    ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(n,x,y+0.5);
+
+  } else if(t==='dot'){
+    // DIAMOND pattern — cream base with a diamond shape and number inside
+    ctx.fillStyle='#e8e0c0';ctx.fillRect(x-r,y-r,r*2,r*2);
+    // Diamond (rotated square)
+    const ds=r*0.62; // half-size of diamond
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(Math.PI/4);
+    // Diamond shadow
+    ctx.fillStyle='rgba(0,0,0,0.25)';
+    ctx.fillRect(-ds+1, -ds+1, ds*2, ds*2);
+    // Diamond fill — dark so number is visible
+    ctx.fillStyle='#1e1e1e';
+    ctx.fillRect(-ds, -ds, ds*2, ds*2);
+    // Diamond inner highlight border
+    ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=1.5;
+    ctx.strokeRect(-ds+2,-ds+2,ds*2-4,ds*2-4);
+    ctx.restore();
+    // Number in white, centred on diamond
+    ctx.fillStyle='#ffffff';
+    ctx.font=`bold ${r*0.7}px monospace`;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText(n, x, y+0.5);
+  }
+
+  // Specular highlight (makes it look round/3D)
+  const hl=ctx.createRadialGradient(x-r*0.3, y-r*0.38, 0, x, y, r);
+  hl.addColorStop(0,'rgba(255,255,255,0.55)');
+  hl.addColorStop(0.4,'rgba(255,255,255,0.08)');
+  hl.addColorStop(1,'rgba(0,0,0,0.12)');
+  ctx.fillStyle=hl;ctx.fillRect(x-r,y-r,r*2,r*2);
+
+  ctx.restore();
+
+  // Edge
+  ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);
+  ctx.strokeStyle='rgba(0,0,0,0.55)';ctx.lineWidth=1.5;ctx.stroke();
+}
+
+// ── Trajectory helpers ────────────────────────────────────────────────────────
+
+// Cast a ray from (ox,oy) in direction (dx,dy) [normalised].
+// Returns the hit point on the play-area walls.
+function rayWall(ox,oy,dx,dy){
+  let tMin=Infinity;
+  // Left wall  x = PX+BR
+  if(dx<0){const t=(PX+BR-ox)/dx; if(t>0&&t<tMin)tMin=t;}
+  // Right wall x = PX+PW-BR
+  if(dx>0){const t=(PX+PW-BR-ox)/dx; if(t>0&&t<tMin)tMin=t;}
+  // Top wall   y = PY+BR
+  if(dy<0){const t=(PY+BR-oy)/dy; if(t>0&&t<tMin)tMin=t;}
+  // Bottom wall y = PY+PH-BR
+  if(dy>0){const t=(PY+PH-BR-oy)/dy; if(t>0&&t<tMin)tMin=t;}
+  return{x:ox+dx*tMin, y:oy+dy*tMin, t:tMin};
+}
+
+// Find the first object ball the cue-ball (radius BR) would hit travelling in (dx,dy).
+// Uses swept-circle vs circle intersection.
+function rayBall(ox,oy,dx,dy){
+  let best=null;
+  for(const b of balls){
+    if(b.pocketed||b===cueBall)continue;
+    // Vector from ray origin to ball centre
+    const fx=b.x-ox, fy=b.y-oy;
+    const proj=fx*dx+fy*dy;       // scalar projection along ray
+    if(proj<=0)continue;          // ball is behind us
+    const perpSq=fx*fx+fy*fy-proj*proj;
+    const sumR=BR*2;              // two ball radii
+    if(perpSq>sumR*sumR)continue; // ray misses
+    const t=proj-Math.sqrt(sumR*sumR-perpSq);
+    if(t<=1)continue;             // too close / overlapping
+    if(!best||t<best.t)best={b,t,
+      cx:ox+dx*t, cy:oy+dy*t,    // cue-ball centre at contact
+      nx:(b.x-(ox+dx*t))/(sumR), // collision normal
+      ny:(b.y-(oy+dy*t))/(sumR)
+    };
+  }
+  return best;
+}
+
+// Cue stick + trajectory rendering
+function drawCue(){
+  if(!cueBall||cueBall.pocketed||placingCue||!isMyTurn())return;
+  if(anyMoving())return;
+
+  const angle=Math.atan2(my-cueBall.y, mx-cueBall.x);
+  const dx=Math.cos(angle), dy=Math.sin(angle);
+
+  // ── 1. Cue ball trajectory line (full, until wall or ball hit) ──
+  const hit=rayBall(cueBall.x,cueBall.y,dx,dy);
+  const wall=rayWall(cueBall.x,cueBall.y,dx,dy);
+
+  // End point of white-ball line
+  const lineEndX = hit ? hit.cx : wall.x;
+  const lineEndY = hit ? hit.cy : wall.y;
+
+  // Draw cue-ball trajectory — solid white line
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(cueBall.x+dx*BR, cueBall.y+dy*BR); // start just outside ball
+  ctx.lineTo(lineEndX, lineEndY);
+  ctx.strokeStyle='rgba(255,255,255,0.55)';
+  ctx.lineWidth=1.5;
+  ctx.setLineDash([6,5]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.restore();
+
+  // Ghost cue ball at contact point
+  if(hit){
+    ctx.save();
+    ctx.globalAlpha=0.28;
+    ctx.beginPath();ctx.arc(hit.cx,hit.cy,BR,0,Math.PI*2);
+    ctx.strokeStyle='#fff';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.restore();
+
+    // ── 2. Object ball trajectory (10% length, deflection angle) ──
+    // After collision, object ball travels along the collision normal
+    const objDx=hit.nx, objDy=hit.ny;
+    const SHORT=60; // short hint line length
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(hit.b.x, hit.b.y);
+    ctx.lineTo(hit.b.x+objDx*SHORT, hit.b.y+objDy*SHORT);
+    ctx.strokeStyle='rgba(255,200,80,0.65)'; // yellow-amber, distinct from white
+    ctx.lineWidth=1.5;
+    ctx.setLineDash([3,4]);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    // Small arrow head
+    const hx=hit.b.x+objDx*SHORT, hy=hit.b.y+objDy*SHORT;
+    const aw=5, ah=8;
+    const perp=Math.atan2(objDy,objDx);
+    ctx.beginPath();
+    ctx.moveTo(hx,hy);
+    ctx.lineTo(hx-Math.cos(perp-0.4)*ah, hy-Math.sin(perp-0.4)*ah);
+    ctx.lineTo(hx-Math.cos(perp+0.4)*ah, hy-Math.sin(perp+0.4)*ah);
+    ctx.closePath();
+    ctx.fillStyle='rgba(255,200,80,0.65)';ctx.fill();
+    ctx.restore();
+  }
+
+  // ── 3. Cue stick body ──
+  const pullback=BR+22+power*0.35;
+  const len=200;
+  const x1=cueBall.x - dx*pullback;
+  const y1=cueBall.y - dy*pullback;
+  const x2=cueBall.x - dx*(pullback+len);
+  const y2=cueBall.y - dy*(pullback+len);
+
+  const cg=ctx.createLinearGradient(x1,y1,x2,y2);
+  cg.addColorStop(0,'#f0dfa0');
+  cg.addColorStop(0.15,'#c8941e');
+  cg.addColorStop(0.6,'#a06810');
+  cg.addColorStop(1,'#6b3e0a');
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);
+  ctx.strokeStyle=cg;ctx.lineWidth=7;ctx.lineCap='round';ctx.stroke();
+  ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);
+  ctx.strokeStyle='rgba(255,255,255,0.18)';ctx.lineWidth=2;ctx.stroke();
+  ctx.beginPath();ctx.arc(x1,y1,3.5,0,Math.PI*2);
+  ctx.fillStyle='#e8c060';ctx.fill();
+}
+
+// Ghost cue ball for placement
+function drawPlaceCue(){
+  if(!placingCue)return;
+  // During break, cue ball must be placed behind (left of) head string
+  const behindLine = !breakMode || mx < HEAD_X - BR;
+  const noOverlap = !ballOverlap(mx,my,cueBall);
+  const ok = behindLine && noOverlap;
+
+  // Shade the legal zone during break
+  if(breakMode){
+    ctx.save();
+    ctx.fillStyle='rgba(255,220,80,0.05)';
+    ctx.fillRect(PX, PY, HEAD_X-PX, PH);
+    ctx.restore();
+  }
+
+  ctx.beginPath();ctx.arc(mx,my,BR,0,Math.PI*2);
+  ctx.fillStyle=ok?'rgba(247,245,238,0.55)':'rgba(220,60,60,0.45)';ctx.fill();
+  ctx.strokeStyle=ok?'rgba(255,255,255,0.7)':'rgba(255,80,80,0.8)';ctx.lineWidth=2;ctx.stroke();
+  ctx.fillStyle=ok?'rgba(0,0,0,0.2)':'rgba(255,80,80,0.8)';
+  ctx.font='10px monospace';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(ok?'✓':'✗',mx,my);
+}
+
+// ── Physics ───────────────────────────────────────────────────────────────────
+const FRIC=0.987, VMIN=0.06, RESTITUTION=0.80;
+
+function anyMoving(){
+  return balls.some(b=>!b.pocketed&&(Math.abs(b.vx)>VMIN||Math.abs(b.vy)>VMIN));
+}
+
+function stepPhysics(){
+  // Sub-step: split each frame into multiple smaller steps so fast balls
+  // never skip past each other, especially at steep angles.
+  const SUBSTEPS=8;
+  const dt=1/SUBSTEPS;
+
+  for(let s=0;s<SUBSTEPS;s++){
+
+    // ── Move & wall bounce ──
+    for(const b of balls){
+      if(b.pocketed)continue;
+      b.x+=b.vx*dt;
+      b.y+=b.vy*dt;
+
+      // Wall bounce — perfectly elastic against cushions
+      if(b.x-BR<PX){
+        b.x=PX+BR;
+        b.vx=Math.abs(b.vx)*RESTITUTION;
+      }
+      if(b.x+BR>PX+PW){
+        b.x=PX+PW-BR;
+        b.vx=-Math.abs(b.vx)*RESTITUTION;
+      }
+      if(b.y-BR<PY){
+        b.y=PY+BR;
+        b.vy=Math.abs(b.vy)*RESTITUTION;
+      }
+      if(b.y+BR>PY+PH){
+        b.y=PY+PH-BR;
+        b.vy=-Math.abs(b.vy)*RESTITUTION;
+      }
+    }
+
+    // ── Ball-ball collision (iterate twice per substep to settle clusters) ──
+    for(let iter=0;iter<2;iter++){
+      for(let i=0;i<balls.length;i++){
+        const a=balls[i]; if(a.pocketed)continue;
+        for(let j=i+1;j<balls.length;j++){
+          const b=balls[j]; if(b.pocketed)continue;
+
+          const dx=b.x-a.x, dy=b.y-a.y;
+          const distSq=dx*dx+dy*dy;
+          const minDist=BR*2;
+
+          if(distSq>=minDist*minDist||distSq<0.0001)continue;
+
+          const dist=Math.sqrt(distSq);
+          const nx=dx/dist, ny=dy/dist;
+
+          // Track first ball the cue ball contacts this turn
+          if(shooting&&firstHitBall===null){
+            if(a===cueBall&&b!==cueBall)firstHitBall=b;
+            else if(b===cueBall&&a!==cueBall)firstHitBall=a;
+          }
+
+          // Push balls apart so they don't overlap
+          const overlap=(minDist-dist)*0.5;
+          a.x-=nx*overlap;
+          a.y-=ny*overlap;
+          b.x+=nx*overlap;
+          b.y+=ny*overlap;
+
+          // Relative velocity along collision normal
+          const dvx=a.vx-b.vx, dvy=a.vy-b.vy;
+          const relVn=dvx*nx+dvy*ny;
+
+          // Only resolve if balls are approaching each other
+          if(relVn<=0)continue;
+
+          // Elastic collision impulse (equal mass)
+          const imp=relVn*RESTITUTION;
+          a.vx-=imp*nx; a.vy-=imp*ny;
+          b.vx+=imp*nx; b.vy+=imp*ny;
+        }
+      }
+    }
+
+    // ── Friction (applied per sub-step so it's consistent) ──
+    const fricStep=Math.pow(FRIC, dt);
+    for(const b of balls){
+      if(b.pocketed)continue;
+      b.vx*=fricStep;
+      b.vy*=fricStep;
+      if(Math.abs(b.vx)<VMIN)b.vx=0;
+      if(Math.abs(b.vy)<VMIN)b.vy=0;
+    }
+  }
+
+  // ── Pocket detection (once per frame is fine) ──
+  for(const b of balls){
+    if(b.pocketed)continue;
+    for(const p of POCKETS){
+      const dx=b.x-p.x, dy=b.y-p.y;
+      if(dx*dx+dy*dy<p.r*p.r){
+        b.pocketed=true; b.vx=0; b.vy=0;
+        pocketedThisTurn.push(b);
+      }
+    }
+  }
+}
+
+function ballOverlap(x,y,skip){
+  for(const b of balls){
+    if(b===skip||b.pocketed)continue;
+    const dx=b.x-x,dy=b.y-y;
+    if(Math.sqrt(dx*dx+dy*dy)<BR*2-1)return true;
+  }
+  return false;
+}
+
+// ── Game Loop ─────────────────────────────────────────────────────────────────
+function loop(){
+  ctx.clearRect(0,0,CW,CH);
+  drawTable();
+  stepPhysics();
+  for(const b of balls)drawBall(b);
+  drawPlaceCue();
+  drawCue();
+
+  const moving=anyMoving();
+  if(!moving&&shooting){
+    shooting=false;
+    onTurnEnd();
+    // Host always sends authoritative state after every turn in online mode
+    if(gameMode==='online'&&peerRole==='host'){
+      sendFullState();
+    }
+  }
+  animID=requestAnimationFrame(loop);
+}
+
+// ── Shooting ──────────────────────────────────────────────────────────────────
+function isMyTurn(){
+  if(practiceMode)return true;
+  if(gameMode==='ai'&&turn===1)return false;
+  if(gameMode==='online'){
+    return(turn===0&&peerRole==='host')||(turn===1&&peerRole==='guest');
+  }
+  return true;
+}
+
+function shoot(angle){
+  if(!cueBall||cueBall.pocketed||gameOver||shooting)return;
+  if(!isMyTurn())return;
+  if(anyMoving())return;
+  pocketedThisTurn=[];
+  firstHitBall=null;
+  cueBallMoved=false;
+  breakMode=false; // break is over once ball is shot
+  const spd=power*0.52*0.8;
+  cueBall.vx=Math.cos(angle)*spd + spinX*spd*0.25;
+  cueBall.vy=Math.sin(angle)*spd + spinY*spd*0.25;
+  shooting=true;
+  if(gameMode==='online'){
+    sendShot(angle);
+    if(peerRole==='guest')setMsg('Shot sent — waiting for result...');
+  }
+}
+
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect();
+  mx=(e.clientX-r.left)*(CW/r.width);
+  my=(e.clientY-r.top)*(CH/r.height);
+});
+
+canvas.addEventListener('click',e=>{
+  const r=canvas.getBoundingClientRect();
+  const cx=(e.clientX-r.left)*(CW/r.width);
+  const cy=(e.clientY-r.top)*(CH/r.height);
+  if(placingCue){
+    const behindLine = !breakMode || cx < HEAD_X - BR;
+    if(behindLine && !ballOverlap(cx,cy,cueBall)){
+      cueBall.x=cx;cueBall.y=cy;
+      cueBall.pocketed=false;cueBall.vx=0;cueBall.vy=0;
+      placingCue=false;
+      if(breakMode) breakMode=false;
+      // Notify peer of cue ball placement
+      if(gameMode==='online'&&peerConn?.open){
+        peerConn.send({type:'place',x:cx,y:cy});
+      }
+    }
+    return;
+  }
+  if(!isMyTurn()||anyMoving())return;
+  shoot(Math.atan2(my-cueBall.y,mx-cueBall.x));
+});
+
+// ── Turn logic — Official 8-ball rules ───────────────────────────────────────
+//
+// Official rules enforced:
+// 1. Opening break: if you pocket a ball, you choose your group. Table is "open"
+//    until first ball is legally pocketed after the break.
+// 2. Table open: you can hit any ball first. Whatever you pocket determines group.
+// 3. Groups assigned: you MUST hit your own ball first. Hitting opponent's ball
+//    first = foul (ball in hand to opponent).
+// 4. Fouls: cue ball scratch, hitting wrong ball first, no ball hits cushion or
+//    pocket after contact = ball in hand to opponent.
+// 5. 8-ball: pot it only when all your balls are in. Potting it early = loss.
+//    Potting 8 + scratch = loss.
+// 6. Keep turn: legally pot one of your own balls with no foul.
+// 7. Lose turn: foul OR pot nothing of yours.
+
+function onTurnEnd(){
+  // Online: only HOST runs rules. Guest waits for state.
+  if(gameMode==='online'&&peerRole==='guest'){shooting=false;return;}
+
+  // Practice: just respawn cue ball if scratched
+  if(practiceMode){
+    if(cueBall.pocketed){
+      cueBall.pocketed=false;cueBall.vx=0;cueBall.vy=0;
+      cueBall.x=PX+PW*0.25;cueBall.y=CH/2;
+      placingCue=true;
+      setMsg('Cue ball pocketed — place it anywhere.');
+    } else {
+      setMsg('Free play — click to shoot!');
+    }
+    updateBallDisplay();
+    return;
+  }
+
+  updateBallDisplay();
+
+  const myType = playerGroup[turn];     // null if table still open
+  const oppType = playerGroup[1-turn];
+  const eight = balls.find(b=>b.id===8);
+  const myBallsLeft = myType ? balls.filter(b=>b.t===myType&&!b.pocketed) : [];
+
+  // ── Check 8-ball potted ──
+  if(eight&&eight.pocketed){
+    // If cue ball also scratched = instant loss
+    if(cueBall.pocketed){
+      cueBall.pocketed=false;cueBall.vx=0;cueBall.vy=0;cueBall.x=PX+PW*0.2;cueBall.y=CH/2;
+      endGame(1-turn,'Potted the 8 and scratched! You lose!');return;
+    }
+    // Must have all your balls potted first
+    if(myType&&myBallsLeft.length===0){
+      endGame(turn,'🎱 Potted the 8! YOU WIN!');
+    } else {
+      endGame(1-turn,'Potted the 8 too early! Opponent wins!');
+    }
+    return;
+  }
+
+  // ── Detect fouls ──
+  let foul=false;
+  let foulMsg='';
+
+  // Foul 1: cue ball scratched
+  if(cueBall.pocketed){
+    foul=true;
+    foulMsg='SCRATCH — ball in hand!';
+    cueBall.pocketed=false;cueBall.vx=0;cueBall.vy=0;
+    cueBall.x=PX+PW*0.2;cueBall.y=CH/2;
+  }
+
+  // Foul 2: wrong ball hit first (only applies once groups are assigned)
+  if(!foul&&myType&&firstHitBall){
+    if(firstHitBall.t!==myType&&firstHitBall.t!=='eight'){
+      // Unless it's the 8-ball situation: all mine in, must hit 8 first
+      const allMyIn=myBallsLeft.length===0;
+      if(!allMyIn){
+        foul=true;
+        foulMsg="Hit opponent ball first — FOUL! Ball in hand.";
+      }
+    }
+    // If all mine in, must hit 8 first
+    if(!foul&&myBallsLeft.length===0&&firstHitBall.t!=='eight'){
+      foul=true;
+      foulMsg='Must hit the 8-ball first — FOUL! Ball in hand.';
+    }
+  }
+
+  // Foul 3: no ball hit at all (cue ball didn't contact anything)
+  if(!foul&&!firstHitBall){
+    // Only a foul if groups are assigned (not on open table or break)
+    if(myType){
+      foul=true;
+      foulMsg='No ball contacted — FOUL! Ball in hand.';
+    }
+  }
+
+  // ── Handle foul ──
+  if(foul){
+    setMsg(`⚠️ ${foulMsg}`);
+    placingCue=true;
+    nextTurn();
+    return;
+  }
+
+  // ── No foul: handle open table group assignment ──
+  // On the break: if you pocket balls, table stays open (choose after break)
+  // After break, first ball legally pocketed decides groups
+  const pottedObjects=pocketedThisTurn.filter(b=>b.t==='stripe'||b.t==='dot');
+
+  if(playerGroup[0]===null&&pottedObjects.length>0){
+    // Table was open — assign based on first potted ball
+    const first=pottedObjects[0];
+    playerGroup[turn]=first.t;
+    playerGroup[1-turn]=first.t==='stripe'?'dot':'stripe';
+    setMsg(`Groups set! You: ${first.t==='stripe'?'STRIPES ▤':'DIAMONDS ◆'} — Opp: ${first.t==='stripe'?'DIAMONDS ◆':'STRIPES ▤'}`);
+  }
+
+  // ── Re-evaluate after possible group assignment ──
+  const nowMyType=playerGroup[turn];
+  const pottedMine=pocketedThisTurn.filter(b=>nowMyType?b.t===nowMyType:false);
+  const allMyNowIn=nowMyType?balls.filter(b=>b.t===nowMyType&&!b.pocketed).length===0:false;
+
+  if(pottedMine.length>0){
+    // Potted own ball(s) legally — keep turn
+    if(allMyNowIn){
+      setMsg('All your balls in! Now pot the 8-ball!');
+    } else {
+      setMsg(`Good pot! Player ${turn+1} goes again.`);
+    }
+    setTurn(`Player ${turn+1} goes again!`);
+    if(gameMode==='ai'&&turn===1){
+      function waitAndShootAgain(){
+        if(gameOver||turn!==1)return;
+        if(anyMoving()||shooting){setTimeout(waitAndShootAgain,150);return;}
+        aiTurn();
+      }
+      setTimeout(waitAndShootAgain,700);
+    }
+  } else {
+    // Nothing potted or potted opponent's — switch turn
+    if(pocketedThisTurn.length>0&&pottedMine.length===0&&nowMyType){
+      setMsg("Potted opponent ball — turn over.");
+    }
+    nextTurn();
+  }
+}
+
+function getGroup(type){return balls.filter(b=>b.t===type);}
+
+function nextTurn(){
+  turn=1-turn;
+  if(gameMode==='local'){
+    // Pass-and-play: show a handoff message before the new player can see the table
+    setTurn(`Player ${turn+1}'s turn`);
+    setMsg(`Hand the device to Player ${turn+1} and click when ready.`);
+  } else {
+    setTurn(`Player ${turn+1}'s turn`);
+  }
+  if(gameMode==='ai'&&turn===1&&!gameOver){
+    // Poll until balls have stopped, then fire AI
+    function waitAndShoot(){
+      if(gameOver||turn!==1)return;
+      if(anyMoving()||shooting){setTimeout(waitAndShoot,150);return;}
+      aiTurn();
+    }
+    setTimeout(waitAndShoot,600);
+  }
+}
+
+function endGame(winner,msg){
+  gameOver=true;
+  setTurn(`Player ${winner+1} WINS! 🏆`);
+  setMsg(msg);
+  document.getElementById('reset-btn').style.display='block';
+}
+
+function setTurn(t){
+  document.getElementById('turn-label').textContent=t;
+  // Update panel titles to reflect current group assignments
+  const p1type=playerGroup[0];
+  const p2type=playerGroup[1];
+  const p1label=p1type?(p1type==='stripe'?'STRIPES ▤':'DIAMONDS ◆'):'(open)';
+  const p2label=p2type?(p2type==='stripe'?'STRIPES ▤':'DIAMONDS ◆'):'(open)';
+  const p1el=document.querySelector('#p1-balls').previousElementSibling;
+  const p2el=document.querySelector('#p2-balls').previousElementSibling;
+  if(p1el)p1el.textContent='Player 1 — '+p1label;
+  if(p2el)p2el.textContent='Player 2 — '+p2label;
+}
+function setMsg(m){document.getElementById('msg-label').textContent=m;}
+
+// ── AI ────────────────────────────────────────────────────────────────────────
+function aiTurn(){
+  if(gameOver||turn!==1)return;
+  if(anyMoving()||shooting)return;
+  if(!cueBall||cueBall.pocketed){
+    cueBall.pocketed=false;cueBall.vx=0;cueBall.vy=0;
+    cueBall.x=PX+PW*0.18+Math.random()*PW*0.06;
+    cueBall.y=PY+PH*0.2+Math.random()*PH*0.6;
+    placingCue=false;
+  }
+
+  const myType=playerGroup[1]||'dot';
+  const myBalls=balls.filter(b=>!b.pocketed&&b.t===myType);
+  const allIn=myBalls.length===0;
+  // Must target own balls first, or 8-ball if all in
+  const targets=allIn
+    ? balls.filter(b=>!b.pocketed&&b.id===8)
+    : myBalls;
+
+  let bestAngle=null,bestScore=-999;
+  for(const tb of targets){
+    for(const p of POCKETS){
+      const dx=p.x-tb.x,dy=p.y-tb.y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<1)continue;
+      const nx=dx/d,ny=dy/d;
+      // Point on target ball surface facing away from pocket = where cue hits
+      const ax=tb.x-nx*(BR*2+1), ay=tb.y-ny*(BR*2+1);
+      const angle=Math.atan2(ay-cueBall.y,ax-cueBall.x);
+      // Prefer closer targets and clearer angles
+      const score=1000/d+Math.random()*80;
+      if(score>bestScore){bestScore=score;bestAngle=angle;}
+    }
+  }
+  if(bestAngle===null)bestAngle=Math.random()*Math.PI*2;
+  // Slight imperfection — better AI hits more accurately
+  bestAngle+=(Math.random()-0.5)*0.25;
+  power=40+Math.random()*45;
+  document.getElementById('power-slider').value=power;
+  updatePowerBar();
+
+  // AI shoots directly — bypasses isMyTurn() player guard
+  if(cueBall&&!cueBall.pocketed&&!gameOver&&!shooting&&!anyMoving()){
+    pocketedThisTurn=[];
+    firstHitBall=null;
+    cueBallMoved=false;
+    breakMode=false;
+    const spd=power*0.52*0.8;
+    cueBall.vx=Math.cos(bestAngle)*spd;
+    cueBall.vy=Math.sin(bestAngle)*spd;
+    shooting=true;
+  }
+}
+
+// ── UI controls ───────────────────────────────────────────────────────────────
+document.getElementById('power-slider').addEventListener('input',e=>{
+  power=+e.target.value;updatePowerBar();
+});
+function updatePowerBar(){
+  document.getElementById('power-bar').style.width=power+'%';
+  document.getElementById('power-pct').textContent=power+'%';
+}
+
+function setSpin(el){
+  document.querySelectorAll('.spin-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+  spinX=+el.dataset.sx; spinY=+el.dataset.sy;
+}
+
+// ── Ball status display ───────────────────────────────────────────────────────
+function updateBallDisplay(){
+  function mkMini(type,pocketed,num){
+    const c=document.createElement('canvas');c.width=22;c.height=22;
+    const cx=c.getContext('2d');
+    const r=10,x=11,y=11;
+    cx.beginPath();cx.arc(x,y,r,0,Math.PI*2);
+    if(pocketed){cx.fillStyle='#2a2a2a';cx.fill();cx.strokeStyle='#3a3a3a';cx.lineWidth=1.5;cx.stroke();return c;}
+    if(type==='stripe'){
+      cx.fillStyle='#f0e8c8';cx.fill();
+      cx.save();cx.beginPath();cx.arc(x,y,r,0,Math.PI*2);cx.clip();
+      cx.fillStyle='#2a2a2a';cx.fillRect(x-r,y-r*0.45,r*2,r*0.9);
+      cx.fillStyle='#fff';cx.font='bold 6px monospace';cx.textAlign='center';cx.textBaseline='middle';
+      cx.fillText(num||'',x,y+0.5);
+      cx.restore();
+    } else if(type==='dot'){
+      cx.fillStyle='#e8e0c0';cx.fill();
+      cx.save();cx.beginPath();cx.arc(x,y,r,0,Math.PI*2);cx.clip();
+      const ds=5.5;
+      cx.translate(x,y);cx.rotate(Math.PI/4);
+      cx.fillStyle='rgba(0,0,0,0.2)';cx.fillRect(-ds+1,-ds+1,ds*2,ds*2);
+      cx.fillStyle='#1e1e1e';cx.fillRect(-ds,-ds,ds*2,ds*2);
+      cx.restore();
+      cx.fillStyle='#fff';cx.font='bold 6px monospace';cx.textAlign='center';cx.textBaseline='middle';
+      cx.fillText(num||'',x,y+0.5);
+    }
+    cx.strokeStyle='rgba(0,0,0,0.5)';cx.lineWidth=1.5;cx.beginPath();cx.arc(x,y,r,0,Math.PI*2);cx.stroke();
+    return c;
+  }
+  function renderRow(elId, type){
+    const el=document.getElementById(elId);el.innerHTML='';
+    balls.filter(b=>b.t===type).forEach(b=>{
+      const c=mkMini(b.t,b.pocketed,b.n);c.title='Ball '+b.n;
+      if(b.pocketed)c.style.opacity='0.35';
+      el.appendChild(c);
+    });
+  }
+  renderRow('p1-balls','stripe');
+  renderRow('p2-balls','dot');
+}
+
+// Legend canvases
+function drawLegend(){
+  function lg(id,fn){
+    const c=document.getElementById(id);if(!c)return;
+    const cx=c.getContext('2d');
+    cx.clearRect(0,0,26,26);
+    cx.save();cx.beginPath();cx.arc(13,13,11,0,Math.PI*2);cx.clip();
+    fn(cx);
+    cx.restore();
+    cx.beginPath();cx.arc(13,13,11,0,Math.PI*2);cx.strokeStyle='rgba(0,0,0,0.5)';cx.lineWidth=1.5;cx.stroke();
+  }
+  lg('leg-stripe',cx=>{
+    cx.fillStyle='#f0e8c8';cx.fillRect(0,0,26,26);
+    cx.fillStyle='#2a2a2a';cx.fillRect(0,9,26,8);
+  });
+  lg('leg-dots',cx=>{
+    cx.fillStyle='#e8e0c0';cx.fillRect(0,0,26,26);
+    cx.save();cx.translate(13,13);cx.rotate(Math.PI/4);
+    cx.fillStyle='rgba(0,0,0,0.2)';cx.fillRect(-6+1,-6+1,12,12);
+    cx.fillStyle='#1e1e1e';cx.fillRect(-6,-6,12,12);
+    cx.restore();
+    cx.fillStyle='#fff';cx.font='bold 7px monospace';cx.textAlign='center';cx.textBaseline='middle';
+    cx.fillText('9',13,13.5);
+  });
+  lg('leg-eight',cx=>{
+    cx.fillStyle='#111';cx.fillRect(0,0,26,26);
+    cx.beginPath();cx.arc(13,13,6,0,Math.PI*2);cx.fillStyle='#fff';cx.fill();
+    cx.fillStyle='#111';cx.font='bold 8px monospace';cx.textAlign='center';cx.textBaseline='middle';cx.fillText('8',13,13.5);
+  });
+  lg('leg-cue',cx=>{
+    cx.fillStyle='#f7f5ee';cx.fillRect(0,0,26,26);
+    cx.strokeStyle='rgba(0,0,0,0.15)';cx.lineWidth=1;
+    cx.beginPath();cx.moveTo(7,13);cx.lineTo(19,13);cx.stroke();
+    cx.beginPath();cx.moveTo(13,7);cx.lineTo(13,19);cx.stroke();
+  });
+}
+
+// ── Mode Management ───────────────────────────────────────────────────────────
+function startMode(mode){
+  document.getElementById('overlay').style.display='none';
+  document.getElementById('reset-btn').style.display='block';
+  document.getElementById('menu-btn').style.display='block';
+  gameMode=mode; practiceMode=(mode==='practice'); const isLocal=(mode==='local');
+  gameOver=false;turn=0;playerGroup=[null,null];shooting=false;
+  if(practiceMode){
+    placingCue=false;breakMode=false;
+  } else {
+    // Start with freeball — player places cue ball behind head string
+    placingCue=true;breakMode=true;
+    // Hide the cue ball off-screen until placed
+    if(cueBall){cueBall.x=-100;cueBall.y=-100;}
+  }
+  rackBalls();
+  // After rack, re-apply break placement state
+  if(!practiceMode){
+    cueBall=balls.find(b=>b.id===0);
+    cueBall.x=-100;cueBall.y=-100; // hidden until placed
+    placingCue=true;breakMode=true;
+  }
+  if(animID)cancelAnimationFrame(animID);
+  loop();
+  drawLegend();updateBallDisplay();
+  if(practiceMode){setTurn('Practice Mode');setMsg('Free aim — click to shoot!');}
+  else if(mode==='ai'){setTurn("Player 1's turn");setMsg('You = STRIPES ▤   AI = DIAMONDS ◆ — place the cue ball to break!');}
+  else if(mode==='local'){setTurn("Player 1's turn");setMsg('🎱 P1: place the cue ball behind the head string!');}
+  else{setTurn("Player 1's turn");setMsg('🎱 Place the cue ball behind the head string to break!');}
+}
+
+function resetGame(){
+  if(animID)cancelAnimationFrame(animID);
+  gameOver=false;turn=0;playerGroup=[null,null];shooting=false;
+  if(practiceMode){
+    placingCue=false;breakMode=false;
+  } else {
+    placingCue=true;breakMode=true;
+  }
+  rackBalls();
+  if(!practiceMode){
+    cueBall=balls.find(b=>b.id===0);
+    cueBall.x=-100;cueBall.y=-100;
+    placingCue=true;breakMode=true;
+  }
+  updateBallDisplay();
+  if(practiceMode){setTurn('Practice Mode');setMsg('Free play!');}
+  else{setTurn("Player 1's turn");setMsg('🎱 Place the cue ball behind the head string to break!');}
+  loop();
+}
+
+function showMenu(){
+  document.getElementById('overlay').style.display='flex';
+  // Go back to mode screen (device already chosen for this session)
+  showScreen('mode-screen');
+}
+
+// ── Device selector ──────────────────────────────────────────────────────────
+function showScreen(id){
+  ['device-screen','mode-screen','local-setup-screen','room-section'].forEach(s=>{
+    const el=document.getElementById(s);
+    if(el)el.style.display=(s===id?'block':'none');
+  });
+}
+
+function setMyDevice(type){
+  myDevice=type;
+  document.getElementById('btn-pc').classList.toggle('chosen',type==='pc');
+  document.getElementById('btn-phone').classList.toggle('chosen',type==='phone');
+  // Small delay so the button highlight is visible before transitioning
+  setTimeout(goToModeScreen, 220);
+}
+
+function setP2Device(type){
+  deviceP2=type;
+  document.getElementById('p2-btn-pc').classList.toggle('chosen',type==='pc');
+  document.getElementById('p2-btn-phone').classList.toggle('chosen',type==='phone');
+  setTimeout(()=>startMode('local'),220);
+}
+
+function showLocalSetup(){
+  const label = myDevice==='phone'?'📱 Phone':'🖥️ PC';
+  document.getElementById('p1-device-recap').textContent=label;
+  showScreen('local-setup-screen');
+}
+
+function goToModeScreen(){
+  // Update device recap label
+  const d=document.getElementById('my-device-display');
+  if(d)d.textContent='Your device: '+(myDevice==='phone'?'📱 Phone / Touch':'🖥️ PC / Mouse');
+  showScreen('mode-screen');
+}
+function goToDeviceScreen(){
+  showScreen('device-screen');
+}
+
+// ── Touch controls ────────────────────────────────────────────────────────────
+// For phone players: touch-start sets aim origin, touch-move updates angle,
+// touch-end fires the shot.
+function getTouchPos(e){
+  const r=canvas.getBoundingClientRect();
+  const t=e.touches[0]||e.changedTouches[0];
+  return{
+    x:(t.clientX-r.left)*(CW/r.width),
+    y:(t.clientY-r.top)*(CH/r.height)
+  };
+}
+
+function isPhonePlayer(){
+  // Online / practice / ai: myDevice is always this player's own device
+  if(gameMode==='online'||gameMode==='practice'||gameMode==='ai') return myDevice==='phone';
+  // Local pass-and-play: P1 uses myDevice, P2 uses deviceP2
+  if(gameMode==='local'){
+    return (turn===0&&myDevice==='phone')||(turn===1&&deviceP2==='phone');
+  }
+  return myDevice==='phone';
+}
+
+canvas.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  if(!isPhonePlayer())return;
+  const pos=getTouchPos(e);
+  if(placingCue){
+    // On touch start during placement, just move ghost
+    mx=pos.x; my=pos.y;
+    return;
+  }
+  touchStartX=pos.x; touchStartY=pos.y;
+  mx=pos.x; my=pos.y;
+  touchActive=true;
+},{passive:false});
+
+canvas.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  if(!isPhonePlayer())return;
+  const pos=getTouchPos(e);
+  mx=pos.x; my=pos.y;
+  if(placingCue){/* ghost follows finger */}
+},{passive:false});
+
+canvas.addEventListener('touchend',e=>{
+  e.preventDefault();
+  if(!isPhonePlayer())return;
+  const pos=getTouchPos(e);
+  if(placingCue){
+    const cx=pos.x, cy=pos.y;
+    const behindLine=!breakMode||cx<HEAD_X-BR;
+    if(behindLine&&!ballOverlap(cx,cy,cueBall)){
+      cueBall.x=cx;cueBall.y=cy;
+      cueBall.pocketed=false;cueBall.vx=0;cueBall.vy=0;
+      placingCue=false;
+      if(breakMode)breakMode=false;
+      if(gameMode==='online'&&peerConn?.open)peerConn.send({type:'place',x:cx,y:cy});
+    }
+    touchActive=false;
+    return;
+  }
+  if(!touchActive)return;
+  touchActive=false;
+  if(!isMyTurn()||anyMoving())return;
+  // Shoot in direction from touch-start (cue ball area) to touch-end
+  // If start was near cue ball, use that; otherwise use cue ball as origin
+  shoot(Math.atan2(my-cueBall.y,mx-cueBall.x));
+},{passive:false});
+
+// ── Online P2P (PeerJS) ───────────────────────────────────────────────────────
+function showOnline(){
+  showScreen('room-section');
+  switchTab('host');
+  loadPeer();
+}
+function hideOnline(){showScreen('mode-screen');}
+
+function switchTab(tab){
+  document.getElementById('host-section').style.display=tab==='host'?'block':'none';
+  document.getElementById('join-section').style.display=tab==='join'?'block':'none';
+  document.getElementById('tab-host').style.borderColor=tab==='host'?'var(--accent)':'var(--border)';
+  document.getElementById('tab-host').style.color=tab==='host'?'var(--accent)':'var(--text)';
+  document.getElementById('tab-join').style.borderColor=tab==='join'?'var(--accent)':'var(--border)';
+  document.getElementById('tab-join').style.color=tab==='join'?'var(--accent)':'var(--text)';
+}
+
+function copyRoomId(){
+  if(!myPeerID){alert('Room ID not ready yet, please wait a moment.');return;}
+  navigator.clipboard.writeText(myPeerID).then(()=>{
+    const btn=document.querySelector('#host-section .btn.primary');
+    btn.textContent='✓ Copied!';setTimeout(()=>btn.textContent='📋 Copy Room ID',2000);
+  }).catch(()=>{
+    prompt('Copy this Room ID:',myPeerID);
+  });
+}
+
+function loadPeer(){
+  if(window.Peer){initPeer();return;}
+  document.getElementById('peer-status').textContent='Loading...';
+  const s=document.createElement('script');
+  s.src='https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js';
+  s.onerror=()=>{document.getElementById('peer-status').textContent='Failed to load PeerJS. Check your connection.';};
+  s.onload=initPeer;document.head.appendChild(s);
+}
+
+function initPeer(){
+  if(peerLib)return;
+  const id='pool-'+Math.random().toString(36).slice(2,8);
+  myPeerID=id;
+  peerLib=new Peer(id);
+  peerLib.on('open',()=>{
+    document.getElementById('peer-status').textContent=id;
+  });
+  peerLib.on('connection',conn=>{
+    peerConn=conn;peerRole='host';
+    setupConn(conn);
+    document.getElementById('peer-status').textContent=id+' ✓ Friend connected!';
+    setTimeout(()=>{
+      startMode('online');
+      // Small delay to ensure game is initialized before sending state
+      setTimeout(sendFullState, 200);
+    },600);
+  });
+  peerLib.on('error',err=>{
+    document.getElementById('peer-status').textContent='Error: '+err.type;
+  });
+}
+
+function joinRoom(){
+  const rid=document.getElementById('room-input').value.trim();
+  const statusEl=document.getElementById('join-status');
+  if(!rid){statusEl.textContent="Paste your friend's Room ID above first!";statusEl.style.color='var(--accent2)';return;}
+  if(!peerLib){
+    statusEl.textContent='Connecting...';
+    loadPeer();
+    setTimeout(joinRoom,1500);return;
+  }
+  peerRole='guest';
+  statusEl.textContent='Connecting to '+rid+'...';statusEl.style.color='var(--muted)';
+  peerConn=peerLib.connect(rid);
+  setupConn(peerConn);
+}
+
+function setupConn(conn){
+  conn.on('open',()=>{
+    document.getElementById('online-panel').style.display='block';
+    document.getElementById('online-status').textContent='Connected ✓';
+    const rid=peerRole==='host'?myPeerID:(document.getElementById('room-input')?document.getElementById('room-input').value.trim():myPeerID);
+    document.getElementById('room-code-display').textContent='Room: '+rid;
+    if(peerRole==='guest'){
+      const s=document.getElementById('join-status');
+      if(s){s.textContent='Connected! Game starting...';s.style.color='#2ea043';}
+      // Guest initialises game locally so they have balls/state ready to receive applyFull
+      setTimeout(()=>startMode('online'),400);
+    }
+  });
+  conn.on('data',d=>{
+    if(d.type==='full')applyFull(d);
+    if(d.type==='shot')doRemoteShot(d);
+    if(d.type==='place'){
+      // Remote player placed cue ball
+      cueBall.x=d.x;cueBall.y=d.y;
+      cueBall.pocketed=false;cueBall.vx=0;cueBall.vy=0;
+      placingCue=false;breakMode=false;
+    }
+  });
+  conn.on('close',()=>{
+    document.getElementById('online-status').textContent='Disconnected';
+    setMsg('Opponent disconnected.');
+  });
+}
+
+function sendFullState(){
+  if(!peerConn?.open)return;
+  peerConn.send({type:'full',balls:serBalls(),turn,playerGroup,gameOver,placingCue});
+}
+function sendShot(angle){
+  if(!peerConn?.open)return;
+  peerConn.send({type:'shot',angle,power});
+}
+function doRemoteShot(d){
+  if(!cueBall||cueBall.pocketed||gameOver)return;
+  power=d.power;
+  pocketedThisTurn=[];
+  firstHitBall=null;
+  cueBallMoved=false;
+  breakMode=false;
+  const spd=power*0.52*0.8;
+  cueBall.vx=Math.cos(d.angle)*spd;
+  cueBall.vy=Math.sin(d.angle)*spd;
+  shooting=true;
+  // If we are host: we run physics authoritatively and will send state back after turn ends
+  // If we are guest: we just mirror for visual smoothness; host will send us the authoritative state
+}
+function applyFull(d){
+  d.balls.forEach(rb=>{const b=balls.find(x=>x.id===rb.id);if(b)Object.assign(b,rb);});
+  turn=d.turn;
+  playerGroup=d.playerGroup;
+  if(d.gameOver!==undefined)gameOver=d.gameOver;
+  if(d.placingCue!==undefined)placingCue=d.placingCue;
+  shooting=false; // authoritative state means movement is done
+  cueBall=balls.find(b=>b.id===0);
+  updateBallDisplay();
+  // Update status labels so guest sees correct turn info
+  if(isMyTurn()){
+    setTurn("Your turn");
+    setMsg('Click to shoot!');
+  } else {
+    setTurn("Opponent's turn");
+    setMsg('Waiting for opponent...');
+  }
+}
+function serBalls(){return balls.map(b=>({id:b.id,x:b.x,y:b.y,vx:b.vx,vy:b.vy,pocketed:b.pocketed}));}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+updatePowerBar();
+drawLegend();
+</script>
 </body>
 </html>
